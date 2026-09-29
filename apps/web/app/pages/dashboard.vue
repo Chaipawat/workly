@@ -15,8 +15,12 @@ const today = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long',
       </div>
       <div class="page-header__actions">
         <time :datetime="new Date().toISOString().slice(0, 10)">{{ today }}</time>
-        <button class="button button--secondary" type="button"><UserPlus :size="17" /> Invite members</button>
-        <button class="button button--primary" type="button"><Plus :size="17" /> Create project</button>
+        <button class="button button--secondary" type="button">
+          <UserPlus :size="17" /> Invite members
+        </button>
+        <button class="button button--primary" type="button">
+          <Plus :size="17" /> Create project
+        </button>
       </div>
     </header>
 
