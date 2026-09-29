@@ -19,3 +19,9 @@ test('uses compact navigation on mobile', async ({ page }, testInfo) => {
   await page.getByRole('button', { name: 'Open navigation' }).click()
   await expect(page.getByRole('navigation', { name: 'Primary navigation' })).toBeVisible()
 })
+
+test('handles navigation destinations that are not implemented yet', async ({ page }) => {
+  await page.goto('/people')
+  await expect(page.getByRole('heading', { level: 1, name: 'People' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Back to dashboard' })).toHaveAttribute('href', '/dashboard')
+})

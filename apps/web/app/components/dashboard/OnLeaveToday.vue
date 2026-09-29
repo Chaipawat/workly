@@ -19,7 +19,8 @@ defineProps<{ people: LeaveTodayItem[] }>()
           <p>{{ person.role }}</p>
         </div>
         <div class="person-row__leave">
-          <StatusBadge :label="person.type === 'annual' ? 'Annual leave' : 'Sick leave'"
+          <StatusBadge
+            :label="person.type === 'annual' ? 'Annual leave' : 'Sick leave'"
             :tone="person.type === 'annual' ? 'blue' : 'red'" /><small>{{ person.returnLabel }}</small>
         </div>
       </article>

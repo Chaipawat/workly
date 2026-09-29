@@ -29,13 +29,15 @@ defineProps<{ projects: DashboardProject[] }>()
         <div class="project-row__progress">
           <div class="progress-copy"><span>{{ getProjectProgress(project) }}%</span><small>{{ project.completedTasks }}
               / {{ project.totalTasks }} tasks</small></div>
-          <div class="progress-track" role="progressbar" :aria-label="`${project.name} progress`"
+          <div
+            class="progress-track" role="progressbar" :aria-label="`${project.name} progress`"
             :aria-valuenow="getProjectProgress(project)" aria-valuemin="0" aria-valuemax="100"><span
               :class="`tone-${project.accent}`" :style="{ width: `${getProjectProgress(project)}%` }" /></div>
         </div>
         <div class="project-row__meta">
           <div class="avatar-stack" :aria-label="`${project.memberInitials.length} project members`">
-            <AppAvatar v-for="initials in project.memberInitials" :key="initials" :initials="initials" size="sm"
+            <AppAvatar
+              v-for="initials in project.memberInitials" :key="initials" :initials="initials" size="sm"
               tone="slate" />
           </div>
           <small>{{ project.dueLabel }}</small>
