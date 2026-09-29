@@ -1,0 +1,3 @@
+# Workly service definitions will be added with the backend foundation.
+# This valid empty Compose file intentionally starts no services in Milestone 1.
+services: {}
