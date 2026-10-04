@@ -13,3 +13,8 @@ test-results/
 Thumbs.db
 .idea/
 .vscode/
+
+# .NET build and local CLI artifacts
+**/bin/
+**/obj/
+.dotnet-cli-home/
