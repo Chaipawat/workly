@@ -1,5 +1,7 @@
 # Docker
 
-Reserved for application container definitions and supporting development configuration.
+Local supporting services are defined in the repository-root `docker-compose.yml`.
+It currently starts PostgreSQL 17 with a health check and a persistent named volume.
 
-Docker services will be added with the backend foundation; Redis and SignalR remain out of scope until their later phases.
+Run it with `docker compose up -d postgres`. Redis and SignalR remain out of scope
+until their later phases.

@@ -2,7 +2,10 @@
 
 Workly is an organization workspace for small teams to manage people, departments, projects, tasks, leave, and announcements.
 
-This repository currently contains **Milestone 1: Frontend Foundation + Dashboard**. The dashboard uses typed mock data; authentication, APIs, database tables, and backend business modules are not part of this milestone.
+This repository contains the frontend dashboard and the backend/database foundation.
+The dashboard still uses typed mock data; the .NET API now has PostgreSQL wiring,
+health checks, the reviewed V1 schema, and an initial EF Core migration. Authentication
+and business endpoints remain later milestones.
 
 ## Repository shape
 
@@ -33,14 +36,15 @@ workly/
 └── package.json             # npm workspace commands
 ```
 
-The reserved directories contain documentation placeholders only. Backend, database, container, and CI implementation still belong to later milestones.
+API resource contracts and CI/CD remain reserved for later milestones.
 
 ## Prerequisites
 
 - Node.js `^22.19.0` or `^24.11.0` (Node `24.21.0` was used here)
 - npm 11+
+- .NET SDK 10
+- Docker Desktop (for local PostgreSQL)
 
-.NET 10 and Docker are not required until the backend foundation milestone.
 
 ## Run locally
 
@@ -59,10 +63,18 @@ npm run typecheck
 npm run test
 npm run build
 npm run test:e2e
+dotnet test apps/api/Workly.sln
 ```
 
 Install Playwright Chromium once with `npx playwright install chromium` if needed.
 
-## Current boundary
+## Backend setup
 
-The next milestone is **Backend Foundation + Database Design**, but database creation waits until the ERD and its constraints have been reviewed and approved.
+```bash
+docker compose up -d postgres
+dotnet tool restore
+dotnet ef database update --project apps/api/src/Workly.Infrastructure
+dotnet run --project apps/api/src/Workly.Api
+```
+
+The next backend milestone is authentication and versioned business API endpoints.
