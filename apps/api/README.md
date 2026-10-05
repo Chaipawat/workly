@@ -16,6 +16,10 @@ dotnet run --project apps/api/src/Workly.Api
 Swagger is available in Development at the URL printed by `dotnet run`; database
 readiness is exposed at `/health`.
 
+Auth endpoints: `/api/auth/register`, `/login`, `/refresh`, `/logout`, and `/me`
+(all under `/api/auth`). See [the Auth learning guide](../../docs/auth-learning-flow.md)
+for Swagger steps, token behavior, signing-key setup, and integration tests.
+
 Set `WORKLY_DB_CONNECTION` when running EF commands against a non-default database.
 
 ## Quality commands
