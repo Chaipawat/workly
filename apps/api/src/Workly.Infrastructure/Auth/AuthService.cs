@@ -21,7 +21,7 @@ public sealed class AuthService(WorklyDbContext db, JwtSettings settings) : IAut
     };
     private static readonly string DummyHash = PasswordHasher.HashPassword(DummyUser, "dummy-password-for-timing");
 
-    public async Task<AuthResponse> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken)
+    public async Task<AuthSession> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken)
     {
         var email = request.Email.Trim().ToLowerInvariant();
         if (await db.Users.AnyAsync(x => x.Email == email, cancellationToken))
@@ -43,7 +43,7 @@ public sealed class AuthService(WorklyDbContext db, JwtSettings settings) : IAut
         return response;
     }
 
-    public async Task<AuthResponse> LoginAsync(LoginRequest request, CancellationToken cancellationToken)
+    public async Task<AuthSession> LoginAsync(LoginRequest request, CancellationToken cancellationToken)
     {
         var email = request.Email.Trim().ToLowerInvariant();
         var user = await db.Users.SingleOrDefaultAsync(x => x.Email == email, cancellationToken);
@@ -58,7 +58,7 @@ public sealed class AuthService(WorklyDbContext db, JwtSettings settings) : IAut
         return response;
     }
 
-    public async Task<AuthResponse> RefreshAsync(string refreshToken, CancellationToken cancellationToken)
+    public async Task<AuthSession> RefreshAsync(string refreshToken, CancellationToken cancellationToken)
     {
         var hash = HashToken(refreshToken);
         var userId = await db.RefreshTokens.Where(x => x.TokenHash == hash)
@@ -124,7 +124,7 @@ public sealed class AuthService(WorklyDbContext db, JwtSettings settings) : IAut
             ?? throw new AuthException(401, "User no longer exists.");
     }
 
-    private AuthResponse CreateSession(User user, DateTimeOffset? refreshExpiresAt = null)
+    private AuthSession CreateSession(User user, DateTimeOffset? refreshExpiresAt = null)
     {
         var now = DateTimeOffset.UtcNow;
         var accessExpiresAt = now.AddMinutes(settings.AccessTokenMinutes);
@@ -140,8 +140,9 @@ public sealed class AuthService(WorklyDbContext db, JwtSettings settings) : IAut
             now.UtcDateTime, accessExpiresAt.UtcDateTime,
             new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.SigningKey)),
                 SecurityAlgorithms.HmacSha256));
-        return new AuthResponse(new JwtSecurityTokenHandler().WriteToken(jwt), accessExpiresAt,
-            rawToken, refreshExpiry, new UserResponse(user.Id, user.Email, user.DisplayName));
+        var response = new AuthResponse(new JwtSecurityTokenHandler().WriteToken(jwt), accessExpiresAt,
+            new UserResponse(user.Id, user.Email, user.DisplayName));
+        return new AuthSession(response, rawToken, refreshExpiry);
     }
 
     public static string HashToken(string token) =>

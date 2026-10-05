@@ -11,19 +11,17 @@ public sealed record LoginRequest(
     [Required, EmailAddress, StringLength(320)] string Email,
     [Required, StringLength(128)] string Password);
 
-public sealed record RefreshRequest(
-    [Required, StringLength(128)] string RefreshToken);
-
 public sealed record UserResponse(Guid Id, string Email, string DisplayName);
 public sealed record AuthResponse(
-    string AccessToken, DateTimeOffset AccessTokenExpiresAt,
-    string RefreshToken, DateTimeOffset RefreshTokenExpiresAt, UserResponse User);
+    string AccessToken, DateTimeOffset AccessTokenExpiresAt, UserResponse User);
+public sealed record AuthSession(
+    AuthResponse Response, string RefreshToken, DateTimeOffset RefreshTokenExpiresAt);
 
 public interface IAuthService
 {
-    Task<AuthResponse> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken);
-    Task<AuthResponse> LoginAsync(LoginRequest request, CancellationToken cancellationToken);
-    Task<AuthResponse> RefreshAsync(string refreshToken, CancellationToken cancellationToken);
+    Task<AuthSession> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken);
+    Task<AuthSession> LoginAsync(LoginRequest request, CancellationToken cancellationToken);
+    Task<AuthSession> RefreshAsync(string refreshToken, CancellationToken cancellationToken);
     Task LogoutAsync(string refreshToken, CancellationToken cancellationToken);
     Task<UserResponse> GetUserAsync(Guid userId, CancellationToken cancellationToken);
 }

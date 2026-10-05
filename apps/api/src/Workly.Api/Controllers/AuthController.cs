@@ -10,27 +10,42 @@ namespace Workly.Api.Controllers;
 [Route("api/auth")]
 [EnableRateLimiting("auth")]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-public sealed class AuthController(IAuthService auth) : ControllerBase
+public sealed class AuthController(IAuthService auth, IWebHostEnvironment environment) : ControllerBase
 {
+    private const string RefreshCookieName = "workly_refresh";
+
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponse>> Register(RegisterRequest request, CancellationToken cancellationToken)
     {
-        var result = await auth.RegisterAsync(request, cancellationToken);
-        return StatusCode(StatusCodes.Status201Created, result);
+        var session = await auth.RegisterAsync(request, cancellationToken);
+        WriteRefreshCookie(session);
+        return StatusCode(StatusCodes.Status201Created, session.Response);
     }
 
     [HttpPost("login")]
-    public Task<AuthResponse> Login(LoginRequest request, CancellationToken cancellationToken) =>
-        auth.LoginAsync(request, cancellationToken);
+    public async Task<ActionResult<AuthResponse>> Login(LoginRequest request, CancellationToken cancellationToken)
+    {
+        var session = await auth.LoginAsync(request, cancellationToken);
+        WriteRefreshCookie(session);
+        return session.Response;
+    }
 
     [HttpPost("refresh")]
-    public Task<AuthResponse> Refresh(RefreshRequest request, CancellationToken cancellationToken) =>
-        auth.RefreshAsync(request.RefreshToken, cancellationToken);
+    public async Task<ActionResult<AuthResponse>> Refresh(CancellationToken cancellationToken)
+    {
+        var refreshToken = ReadRefreshCookie();
+        var session = await auth.RefreshAsync(refreshToken, cancellationToken);
+        WriteRefreshCookie(session);
+        return session.Response;
+    }
 
     [HttpPost("logout")]
-    public async Task<IActionResult> Logout(RefreshRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Logout(CancellationToken cancellationToken)
     {
-        await auth.LogoutAsync(request.RefreshToken, cancellationToken);
+        if (Request.Cookies.TryGetValue(RefreshCookieName, out var refreshToken) &&
+            !string.IsNullOrWhiteSpace(refreshToken))
+            await auth.LogoutAsync(refreshToken, cancellationToken);
+        Response.Cookies.Delete(RefreshCookieName, CookieOptions());
         return NoContent();
     }
 
@@ -42,4 +57,27 @@ public sealed class AuthController(IAuthService auth) : ControllerBase
             return Unauthorized();
         return await auth.GetUserAsync(userId, cancellationToken);
     }
+
+    private string ReadRefreshCookie()
+    {
+        if (Request.Cookies.TryGetValue(RefreshCookieName, out var refreshToken) &&
+            !string.IsNullOrWhiteSpace(refreshToken))
+            return refreshToken;
+        throw new AuthException(StatusCodes.Status401Unauthorized, "Missing refresh session.");
+    }
+
+    private void WriteRefreshCookie(AuthSession session)
+    {
+        var options = CookieOptions();
+        options.Expires = session.RefreshTokenExpiresAt;
+        Response.Cookies.Append(RefreshCookieName, session.RefreshToken, options);
+    }
+
+    private CookieOptions CookieOptions() => new()
+    {
+        HttpOnly = true,
+        Secure = !environment.IsDevelopment() || Request.IsHttps,
+        SameSite = SameSiteMode.Strict,
+        Path = "/api/auth"
+    };
 }

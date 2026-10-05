@@ -2,6 +2,7 @@
 import { ArrowLeft, Construction } from '@lucide/vue'
 
 definePageMeta({
+  middleware: 'auth',
   validate: route => [
     '/people',
     '/teams',

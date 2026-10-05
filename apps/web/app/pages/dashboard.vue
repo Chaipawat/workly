@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { Plus, UserPlus } from '@lucide/vue'
 
+definePageMeta({ middleware: 'auth' })
+
 const { data, state } = useDashboard()
+const { user } = useAuth()
 const today = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric' }).format(new Date())
 </script>
 
@@ -10,7 +13,7 @@ const today = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long',
     <header class="page-header">
       <div>
         <p class="eyebrow">{{ data.organizationName }} · Overview</p>
-        <h1>Good morning, {{ data.currentUserName }} <span aria-hidden="true">👋</span></h1>
+        <h1>Good morning, {{ user?.displayName }} <span aria-hidden="true">👋</span></h1>
         <p>Here’s what’s happening at {{ data.organizationName }} today.</p>
       </div>
       <div class="page-header__actions">

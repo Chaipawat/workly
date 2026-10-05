@@ -1,5 +1,7 @@
 export default defineNuxtConfig({
   compatibilityDate: '2026-09-01',
+  ssr: false,
+  nitro: { preset: 'static' },
   devtools: { enabled: true },
   modules: ['@nuxt/eslint'],
   components: [{ path: '~/components', pathPrefix: false }],
@@ -15,4 +17,9 @@ export default defineNuxtConfig({
     },
   },
   typescript: { strict: true, typeCheck: true },
+  runtimeConfig: {
+    public: {
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:5237/api',
+    },
+  },
 })
