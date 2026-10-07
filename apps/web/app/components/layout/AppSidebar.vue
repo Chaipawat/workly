@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { FolderKanban, LayoutDashboard, ListTodo, Megaphone, Network, Palmtree, Settings, Users, X } from '@lucide/vue'
+import { getInitials } from '~/utils/auth'
 
 defineProps<{ open: boolean }>()
 defineEmits<{ close: [] }>()
+
+const { user } = useAuth()
 
 const navigation = [
   { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
@@ -37,8 +40,8 @@ const navigation = [
     <div class="sidebar__footer">
       <NuxtLink to="/settings/organization" class="nav-link" @click="$emit('close')"><Settings :size="19" aria-hidden="true" /><span>Settings</span></NuxtLink>
       <div class="sidebar__profile">
-        <AppAvatar initials="RT" size="sm" tone="indigo" />
-        <span><strong>Ryu Tanaka</strong><small>Owner</small></span>
+        <AppAvatar :initials="getInitials(user?.displayName)" size="sm" tone="indigo" />
+        <span><strong>{{ user?.displayName }}</strong><small>Member</small></span>
         <span class="presence-dot" aria-label="Online" />
       </div>
     </div>

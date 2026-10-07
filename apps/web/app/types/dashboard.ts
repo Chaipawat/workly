@@ -1,5 +1,5 @@
-export type TaskStatus = 'todo' | 'in-progress' | 'review' | 'done'
-export type LeaveType = 'annual' | 'sick'
+export type TaskStatus = 'todo' | 'in-progress' | 'done'
+export type LeaveType = 'annual' | 'sick' | 'personal' | 'other'
 export type DashboardViewState = 'default' | 'loading' | 'empty' | 'error'
 
 export interface DashboardMetric {

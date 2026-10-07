@@ -1,3 +1,22 @@
-# Workly service definitions will be added with the backend foundation.
-# This valid empty Compose file intentionally starts no services in Milestone 1.
-services: {}
+# Local development services. Copy .env.example to .env to override defaults.
+services:
+  postgres:
+    image: postgres:17
+    container_name: workly-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-workly}
+      POSTGRES_USER: ${POSTGRES_USER:-workly}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-workly_dev_password}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - workly-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  workly-postgres-data:
