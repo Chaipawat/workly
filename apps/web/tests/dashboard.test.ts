@@ -16,6 +16,6 @@ describe('dashboard calculations', () => {
   })
 
   it('totals all task statuses', () => {
-    expect(getTaskTotal({ todo: 18, 'in-progress': 12, review: 5, done: 31 })).toBe(66)
+    expect(getTaskTotal({ todo: 18, 'in-progress': 12, done: 31 })).toBe(61)
   })
 })

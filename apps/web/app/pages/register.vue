@@ -44,8 +44,8 @@ const submit = async () => {
       </label>
       <label>
         <span>Password</span>
-        <span class="input-control"><LockKeyhole :size="18" aria-hidden="true" /><input v-model="form.password" type="password" name="password" autocomplete="new-password" placeholder="At least 15 characters" minlength="15" maxlength="128" required></span>
-        <small>Use at least 15 characters. A password manager is recommended.</small>
+        <span class="input-control"><LockKeyhole :size="18" aria-hidden="true" /><input v-model="form.password" type="password" name="password" autocomplete="new-password" placeholder="At least 6 characters" minlength="6" maxlength="128" required></span>
+        <small>Use at least 6 characters. A longer unique password is recommended.</small>
       </label>
       <button class="button button--primary auth-submit" type="submit" :disabled="submitting">
         {{ submitting ? 'Creating account…' : 'Create account' }}<ArrowRight v-if="!submitting" :size="18" aria-hidden="true" />

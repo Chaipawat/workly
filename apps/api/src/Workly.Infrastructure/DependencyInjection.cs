@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Workly.Infrastructure.Persistence;
+using Workly.Application.Workspace;
+using Workly.Infrastructure.Workspace;
 
 namespace Workly.Infrastructure;
 
@@ -19,6 +21,8 @@ public static class DependencyInjection
             options
                 .UseNpgsql(connectionString)
                 .UseSnakeCaseNamingConvention());
+
+        services.AddScoped<IWorkspaceService, WorkspaceService>();
 
         services
             .AddHealthChecks()

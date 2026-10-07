@@ -18,12 +18,12 @@ const today = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long',
       </div>
       <div class="page-header__actions">
         <time :datetime="new Date().toISOString().slice(0, 10)">{{ today }}</time>
-        <button class="button button--secondary" type="button">
-          <UserPlus :size="17" /> Invite members
-        </button>
-        <button class="button button--primary" type="button">
+        <NuxtLink class="button button--secondary" to="/people">
+          <UserPlus :size="17" /> Add members
+        </NuxtLink>
+        <NuxtLink class="button button--primary" to="/projects">
           <Plus :size="17" /> Create project
-        </button>
+        </NuxtLink>
       </div>
     </header>
 

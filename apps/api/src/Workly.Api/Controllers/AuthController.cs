@@ -58,6 +58,28 @@ public sealed class AuthController(IAuthService auth, IWebHostEnvironment enviro
         return await auth.GetUserAsync(userId, cancellationToken);
     }
 
+    [Authorize]
+    [HttpPut("profile")]
+    public async Task<ActionResult<UserResponse>> UpdateProfile(UpdateProfileRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (!Guid.TryParse(User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value, out var userId))
+            return Unauthorized();
+        return await auth.UpdateProfileAsync(userId, request, cancellationToken);
+    }
+
+    [Authorize]
+    [HttpPut("password")]
+    public async Task<IActionResult> ChangePassword(ChangePasswordRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (!Guid.TryParse(User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value, out var userId))
+            return Unauthorized();
+        await auth.ChangePasswordAsync(userId, request, cancellationToken);
+        Response.Cookies.Delete(RefreshCookieName, CookieOptions());
+        return NoContent();
+    }
+
     private string ReadRefreshCookie()
     {
         if (Request.Cookies.TryGetValue(RefreshCookieName, out var refreshToken) &&

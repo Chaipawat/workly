@@ -2,10 +2,9 @@
 
 Workly is an organization workspace for small teams to manage people, departments, projects, tasks, leave, and announcements.
 
-This repository contains the frontend dashboard and the backend/database foundation.
-The dashboard still uses typed mock data; the .NET API now has PostgreSQL wiring,
-health checks, the reviewed V1 schema, and an initial EF Core migration. Authentication
-and business endpoints remain later milestones.
+This repository contains the Nuxt frontend and ASP.NET Core/PostgreSQL backend. The application includes
+authentication, workspace onboarding and switching, a tenant-safe dashboard, people and department management,
+projects, tasks, leave approval, announcements, global search, notifications, and workspace/account settings.
 
 ## Repository shape
 
@@ -35,8 +34,6 @@ workly/
 ├── docker-compose.yml
 └── package.json             # npm workspace commands
 ```
-
-API resource contracts and CI/CD remain reserved for later milestones.
 
 ## Prerequisites
 
@@ -77,4 +74,8 @@ dotnet ef database update --project apps/api/src/Workly.Infrastructure
 dotnet run --project apps/api/src/Workly.Api
 ```
 
-The next backend milestone is authentication and versioned business API endpoints.
+The main workspace CRUD and workflow endpoints are implemented. Invitation email delivery and task comments
+remain optional extensions documented in the feature learning map.
+
+Follow [the complete feature learning map](docs/feature-learning-map.md) to implement each area through
+production-style failure drills, and start with [the workspace/dashboard flow](docs/workspace-dashboard-learning-flow.md).

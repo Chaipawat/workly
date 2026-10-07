@@ -23,7 +23,7 @@ export const dashboardMock: DashboardData = {
     { id: 'sarah-away', day: 'Tomorrow', title: 'Sarah Chen away', detail: 'Approved leave', kind: 'leave' },
     { id: 'homepage-copy', day: 'Oct 2', title: 'Homepage copy review', detail: 'Task due · Website Redesign', kind: 'task' },
   ],
-  taskStatus: { todo: 18, 'in-progress': 12, review: 5, done: 31 },
+  taskStatus: { todo: 18, 'in-progress': 12, done: 31 },
   team: [
     { id: 'alex', name: 'Alex Morgan', initials: 'AM', role: 'Engineering Lead', status: 'online' },
     { id: 'sarah', name: 'Sarah Chen', initials: 'SC', role: 'Product Designer', status: 'away' },

@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using Workly.Application.Auth;
 using Workly.Domain.Entities;
+using Workly.Domain.Enums;
 using Workly.Infrastructure.Persistence;
 
 namespace Workly.Infrastructure.Auth;
@@ -30,6 +31,32 @@ public sealed class AuthService(WorklyDbContext db, JwtSettings settings) : IAut
         var user = new User { Email = email, DisplayName = request.DisplayName.Trim(), PasswordHash = "" };
         user.PasswordHash = PasswordHasher.HashPassword(user, request.Password);
         db.Users.Add(user);
+        var organization = new Organization
+        {
+            Name = $"{user.DisplayName}'s Workspace",
+            Slug = $"{Slugify(user.DisplayName)}-{user.Id.ToString()[..8]}"
+        };
+        var owner = new OrganizationMember
+        {
+            Organization = organization,
+            OrganizationId = organization.Id,
+            User = user,
+            UserId = user.Id,
+            Role = OrganizationRole.Owner,
+            JobTitle = "Owner"
+        };
+        db.Organizations.Add(organization);
+        db.OrganizationMembers.Add(owner);
+        db.ActivityLogs.Add(new ActivityLog
+        {
+            OrganizationId = organization.Id,
+            Actor = owner,
+            ActorId = owner.Id,
+            Action = "organization.created",
+            EntityType = "organization",
+            EntityId = organization.Id,
+            Metadata = System.Text.Json.JsonSerializer.Serialize(new { name = organization.Name })
+        });
         var response = CreateSession(user);
         try
         {
@@ -124,6 +151,30 @@ public sealed class AuthService(WorklyDbContext db, JwtSettings settings) : IAut
             ?? throw new AuthException(401, "User no longer exists.");
     }
 
+    public async Task<UserResponse> UpdateProfileAsync(Guid userId, UpdateProfileRequest request,
+        CancellationToken cancellationToken)
+    {
+        var user = await db.Users.SingleOrDefaultAsync(x => x.Id == userId, cancellationToken)
+            ?? throw new AuthException(401, "User no longer exists.");
+        user.DisplayName = request.DisplayName.Trim();
+        await db.SaveChangesAsync(cancellationToken);
+        return new UserResponse(user.Id, user.Email, user.DisplayName);
+    }
+
+    public async Task ChangePasswordAsync(Guid userId, ChangePasswordRequest request,
+        CancellationToken cancellationToken)
+    {
+        var user = await db.Users.SingleOrDefaultAsync(x => x.Id == userId, cancellationToken)
+            ?? throw new AuthException(401, "User no longer exists.");
+        if (PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, request.CurrentPassword)
+            == PasswordVerificationResult.Failed)
+            throw new AuthException(400, "Current password is incorrect.");
+        user.PasswordHash = PasswordHasher.HashPassword(user, request.NewPassword);
+        await db.RefreshTokens.Where(x => x.UserId == userId && x.RevokedAt == null)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(x => x.RevokedAt, DateTimeOffset.UtcNow), cancellationToken);
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
     private AuthSession CreateSession(User user, DateTimeOffset? refreshExpiresAt = null)
     {
         var now = DateTimeOffset.UtcNow;
@@ -147,6 +198,15 @@ public sealed class AuthService(WorklyDbContext db, JwtSettings settings) : IAut
 
     public static string HashToken(string token) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
+
+    private static string Slugify(string value)
+    {
+        var slug = string.Concat(value.Trim().ToLowerInvariant().Select(character =>
+            char.IsAsciiLetterOrDigit(character) ? character : '-'));
+        while (slug.Contains("--", StringComparison.Ordinal)) slug = slug.Replace("--", "-", StringComparison.Ordinal);
+        slug = slug.Trim('-');
+        return string.IsNullOrEmpty(slug) ? "workspace" : slug[..Math.Min(slug.Length, 60)];
+    }
 
     private static AuthException InvalidRefresh() => new(401, "Invalid or expired refresh token.");
 }

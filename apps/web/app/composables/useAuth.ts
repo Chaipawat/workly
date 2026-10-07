@@ -2,7 +2,7 @@ import type { AuthResponse, AuthUser, LoginInput, RegisterInput } from '~/types/
 
 type ApiRequestOptions = {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
-  body?: Record<string, unknown> | string | FormData
+  body?: object | string | FormData
   query?: Record<string, string | number | boolean | undefined>
 }
 
@@ -33,6 +33,10 @@ export const useAuth = () => {
     accessToken.value = null
     accessTokenExpiresAt.value = null
     user.value = null
+    useState('workspace:organizations', () => []).value = []
+    useState<string | null>('workspace:current-id', () => null).value = null
+    useState<boolean>('workspace:initialized', () => false).value = false
+    if (import.meta.client) localStorage.removeItem('workly:organization-id')
   }
 
   const refresh = async () => {
@@ -88,6 +92,17 @@ export const useAuth = () => {
     }
   }
 
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    await apiFetch<unknown>('/auth/password', { method: 'PUT', body: { currentPassword, newPassword } })
+    clearSession()
+  }
+
+  const updateProfile = async (displayName: string) => {
+    const updatedUser = await apiFetch<AuthUser>('/auth/profile', { method: 'PUT', body: { displayName } })
+    user.value = updatedUser
+    return updatedUser
+  }
+
   const apiFetch = async <T>(path: string, options: ApiRequestOptions = {}, retry = true): Promise<T> => {
     try {
       return await $fetch<T>(apiUrl(path), {
@@ -112,6 +127,8 @@ export const useAuth = () => {
     login,
     register,
     logout,
+    updateProfile,
+    changePassword,
     refresh,
     apiFetch,
   }
